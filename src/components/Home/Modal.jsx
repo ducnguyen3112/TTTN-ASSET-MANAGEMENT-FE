@@ -1,12 +1,14 @@
 import styled from "styled-components";
-import { CloseOutlined } from "@mui/icons-material";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {CloseOutlined} from "@mui/icons-material";
+import {useCallback, useEffect, useRef, useState} from "react";
 import "../../css/main.css";
-import StringFormatter from "../../service/StringFormatter";
-import axios, { Axios } from "axios";
+import axios from "axios";
 import DateFormatterService from "../../service/DateFormatterService";
-import * as AssetService from '../../service/AssetService'
-import { AXIOS_API_URL } from "../../constants/Axios";
+import {AXIOS_API_URL} from "../../constants/Axios";
+import RequestAssetService from "../../service/RequestAssetService";
+import requestAssetService from "../../service/RequestAssetService";
+import homeMain from "./HomeMain";
+
 const Background = styled.div`
     width: 100%;
     height: 100%;
@@ -217,7 +219,15 @@ const ThSpan = styled.span`
 `
 
 
-const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, showToastFromOut }) => {
+const Modal = ({
+                   showModal,
+                   setShowModal,
+                   type,
+                   assignment,
+                   setIsReloadPage,
+                   showToastFromOut,
+                   requestAsset
+               }) => {
     const [isFullAssetName, setIsFullAssetName] = useState(true);
     const [isFullSpecification, setIsFullSpecification] = useState(true);
     const [isFullNote, setIsFullNote] = useState(true);
@@ -233,6 +243,7 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
         (e) => {
             if (e.key === 'Escape' && showModal) {
                 setShowModal(false);
+                setIsReloadPage(prev => !prev);
             }
         },
         [setShowModal, showModal]
@@ -249,36 +260,42 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
     // Respond Assignment
     const handleRespondAccept = async () => {
         console.log("assignment: ", assignment);
-        const res = await axios.put(`${AXIOS_API_URL}/users/api/assignments/state`, 
-        {   assignedTo: assignment.assignedTo,
-            assetCode: assignment.assetCode,
-            assignedDate: assignment.assignedDate,
-            state: "Accepted"
-        },
-        {headers: {
-            Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
-        }}).then((res) => {
+        const res = await axios.put(`${AXIOS_API_URL}/users/api/assignments/state`,
+            {
+                assignedTo: assignment.assignedTo,
+                assetCode: assignment.assetCode,
+                assignedDate: assignment.assignedDate,
+                state: "Accepted"
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
+                }
+            }).then((res) => {
             console.log("RespondAccept: ", res);
             setIsReloadPage(prev => !prev);
             setShowModal(prev => !prev);
-        });   
+        });
     }
 
     const handleRespondDecline = async () => {
         console.log("assignment: ", assignment);
-        const res = await axios.put(`${AXIOS_API_URL}/users/api/assignments/state`, 
-        {   assignedTo: assignment.assignedTo,
-            assetCode: assignment.assetCode,
-            assignedDate: assignment.assignedDate,
-            state: "Declined"
-        },
-        {headers: {
-            Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
-        }}).then((res) => {
+        const res = await axios.put(`${AXIOS_API_URL}/users/api/assignments/state`,
+            {
+                assignedTo: assignment.assignedTo,
+                assetCode: assignment.assetCode,
+                assignedDate: assignment.assignedDate,
+                state: "Declined"
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
+                }
+            }).then((res) => {
             console.log("RespondAccept: ", res);
             setIsReloadPage(prev => !prev);
             setShowModal(prev => !prev);
-        }); 
+        });
     }
 
     // Create Returning request
@@ -286,23 +303,28 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
         console.log("localStorage.getItem('user_info')).username: ", JSON.parse(localStorage.getItem('user_info')).username);
         console.log("assignment: ", assignment);
         const res = await axios.post(`${AXIOS_API_URL}/users/api/requests`,
-        {
-            assignedTo: assignment.assignedTo,
-            assetCode: assignment.assetCode,
-            assignedDate: assignment.assignedDate
-        },
-        {headers: {
-            Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
-        }}).then((res) => {
+            {
+                assignedTo: assignment.assignedTo,
+                assetCode: assignment.assetCode,
+                assignedDate: assignment.assignedDate
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${JSON.parse(localStorage.getItem('user_info')).token}`,
+                }
+            }).then((res) => {
             console.log("RespondCreate ReturningRequest: ", res);
             // Toast when success
-            const dataToast = { message: "Create returning request successfully!", type: "success" };
+            const dataToast = {
+                message: "Create returning request successfully!",
+                type: "success"
+            };
             showToastFromOut(dataToast);
             setIsReloadPage(prev => !prev);
             setShowModal(prev => !prev);
         }).catch((err) => {
             // Toast when have error 
-            const dataToast = { message: err.response.data.message, type: "danger" };
+            const dataToast = {message: err.response.data.message, type: "danger"};
             showToastFromOut(dataToast);
             console.log("err", err.response.data.message);
         });
@@ -312,10 +334,10 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
         return (
             <>
                 {showModal ? (
-                    <Background ref={modalRef} onClick={closeModal} id = "back_ground">
-                        <ModalWrapper showModal={showModal} id = "modal-assignment-wrapper">
+                    <Background ref={modalRef} onClick={closeModal} id="back_ground">
+                        <ModalWrapper showModal={showModal} id="modal-assignment-wrapper">
                             <H2>Detailed Assignment Information</H2>
-                            <ModalAssignmentContent id = "modal-assignment-content">
+                            <ModalAssignmentContent id="modal-assignment-content">
                                 <DetailTitle>
                                     <DetailTitleItem>Asset Code</DetailTitleItem>
                                     <DetailTitleItem>Asset Name</DetailTitleItem>
@@ -326,22 +348,32 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                                     <DetailTitleItem>State</DetailTitleItem>
                                     <DetailTitleItem>Note</DetailTitleItem>
                                 </DetailTitle>
-                                <DetailContent id = "detail-assignment-content">
-                                    <DetailContentItem id = {'code-'+assignment.assetCode}>{assignment.assetCode ? assignment.assetCode:'empty' }</DetailContentItem>
+                                <DetailContent id="detail-assignment-content">
+                                    <DetailContentItem
+                                        id={'code-' + assignment.assetCode}>{assignment.assetCode ? assignment.assetCode : 'empty'}</DetailContentItem>
                                     {/* <DetailContentItem id = {'name-'+assignment.assetName}>{assignment.assetName ? assignment.assetName:'empty'}</DetailContentItem> */}
-                                    <DetailContentItem id={'name-'+assignment.assetName}
-                                        onMouseEnter={() => setIsFullAssetName(false)}
-                                        onMouseLeave={() => setIsFullAssetName(true)}
-                                        style={{ position: "relative" }}
+                                    <DetailContentItem id={'name-' + assignment.assetName}
+                                                       onMouseEnter={() => setIsFullAssetName(false)}
+                                                       onMouseLeave={() => setIsFullAssetName(true)}
+                                                       style={{position: "relative"}}
                                     >
                                         {assignment.assetName.length >= 20 ? (assignment.assetName.substring(0, 20) + '...') : assignment.assetName}
                                         {
                                             assignment.assetName.length >= 20 ?
                                                 <div style={{
                                                     display: isFullAssetName ? "none" : "block"
-                                                    , position: "absolute", width: '15rem', backgroundColor: '#f5f5f5'
-                                                    , wordWrap: "break-word", height: 'auto', zIndex: "10"
-                                                    , border: "1px solid #333", paddingLeft: "20px", borderRadius: "10px"
+                                                    ,
+                                                    position: "absolute",
+                                                    width: '15rem',
+                                                    backgroundColor: '#f5f5f5'
+                                                    ,
+                                                    wordWrap: "break-word",
+                                                    height: 'auto',
+                                                    zIndex: "10"
+                                                    ,
+                                                    border: "1px solid #333",
+                                                    paddingLeft: "20px",
+                                                    borderRadius: "10px"
                                                 }}>
                                                     {assignment.assetName}
                                                 </div>
@@ -350,19 +382,29 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                                         }
                                     </DetailContentItem>
                                     {/* <DetailContentItem id = {'spec-'+assignment.specification}>{assignment.assetSpecification ? assignment.assetSpecification:'empty'}</DetailContentItem> */}
-                                    <DetailContentItem id={'spec-'+assignment.specification}
+                                    <DetailContentItem
+                                        id={'spec-' + assignment.specification}
                                         onMouseEnter={() => setIsFullSpecification(false)}
                                         onMouseLeave={() => setIsFullSpecification(true)}
-                                        style={{ position: "relative" }}
+                                        style={{position: "relative"}}
                                     >
                                         {assignment.assetSpecification.length >= 20 ? (assignment.assetSpecification.substring(0, 20) + '...') : assignment.assetSpecification}
                                         {
                                             assignment.assetSpecification.length >= 20 ?
                                                 <div style={{
                                                     display: isFullSpecification ? "none" : "block"
-                                                    , position: "absolute", width: '15rem', backgroundColor: '#f5f5f5'
-                                                    , wordWrap: "break-word", height: 'auto', zIndex: "10"
-                                                    , border: "1px solid #333", paddingLeft: "20px", borderRadius: "10px"
+                                                    ,
+                                                    position: "absolute",
+                                                    width: '15rem',
+                                                    backgroundColor: '#f5f5f5'
+                                                    ,
+                                                    wordWrap: "break-word",
+                                                    height: 'auto',
+                                                    zIndex: "10"
+                                                    ,
+                                                    border: "1px solid #333",
+                                                    paddingLeft: "20px",
+                                                    borderRadius: "10px"
                                                 }}>
                                                     {assignment.assetSpecification}
                                                 </div>
@@ -370,24 +412,37 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                                                 <></>
                                         }
                                     </DetailContentItem>
-                                    <DetailContentItem id = {'to-'+assignment.assignedTo}>{assignment.assignedTo ? assignment.assignedTo: 'empty'}</DetailContentItem>
-                                    <DetailContentItem id = {'by-'+assignment.assignedBy}>{assignment.assignedBy ? assignment.assignedBy: 'empty'}</DetailContentItem>
-                                    <DetailContentItem id = {'date-'+assignment.assignedDate}>{assignment.assignedDate?DateFormatterService.dateFormat(assignment.assignedDate):'empty'}</DetailContentItem>
-                                    <DetailContentItem id = {'state-'+assignment.state}>{assignment.state ? assignment.state: 'empty'}</DetailContentItem>
+                                    <DetailContentItem
+                                        id={'to-' + assignment.assignedTo}>{assignment.assignedTo ? assignment.assignedTo : 'empty'}</DetailContentItem>
+                                    <DetailContentItem
+                                        id={'by-' + assignment.assignedBy}>{assignment.assignedBy ? assignment.assignedBy : 'empty'}</DetailContentItem>
+                                    <DetailContentItem
+                                        id={'date-' + assignment.assignedDate}>{assignment.assignedDate ? DateFormatterService.dateFormat(assignment.assignedDate) : 'empty'}</DetailContentItem>
+                                    <DetailContentItem
+                                        id={'state-' + assignment.state}>{assignment.state ? assignment.state : 'empty'}</DetailContentItem>
                                     {/* <DetailContentItem id = {'note-'+assignment.note}>{assignment.note ? assignment.note:'empty'}</DetailContentItem> */}
-                                    <DetailContentItem id={'note-'+assignment.note}
-                                        onMouseEnter={() => setIsFullNote(false)}
-                                        onMouseLeave={() => setIsFullNote(true)}
-                                        style={{ position: "relative" }}
+                                    <DetailContentItem id={'note-' + assignment.note}
+                                                       onMouseEnter={() => setIsFullNote(false)}
+                                                       onMouseLeave={() => setIsFullNote(true)}
+                                                       style={{position: "relative"}}
                                     >
                                         {assignment.note.length >= 20 ? (assignment.note.substring(0, 20) + '...') : assignment.note}
                                         {
                                             assignment.note.length >= 20 ?
                                                 <div style={{
                                                     display: isFullNote ? "none" : "block"
-                                                    , position: "absolute", width: '15rem', backgroundColor: '#f5f5f5'
-                                                    , wordWrap: "break-word", height: 'auto', zIndex: "10"
-                                                    , border: "1px solid #333", paddingLeft: "20px", borderRadius: "10px"
+                                                    ,
+                                                    position: "absolute",
+                                                    width: '15rem',
+                                                    backgroundColor: '#f5f5f5'
+                                                    ,
+                                                    wordWrap: "break-word",
+                                                    height: 'auto',
+                                                    zIndex: "10"
+                                                    ,
+                                                    border: "1px solid #333",
+                                                    paddingLeft: "20px",
+                                                    borderRadius: "10px"
                                                 }}>
                                                     {assignment.note}
                                                 </div>
@@ -397,11 +452,11 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                                     </DetailContentItem>
                                 </DetailContent>
                             </ModalAssignmentContent>
-                            <CloseModalButton id = "close_modal_button"
-                                aria-label="Close modal"
-                                onClick={() => setShowModal(prev => !prev)}
+                            <CloseModalButton id="close_modal_button"
+                                              aria-label="Close modal"
+                                              onClick={() => setShowModal(prev => !prev)}
                             >
-                                <CloseOutlined />
+                                <CloseOutlined/>
                             </CloseModalButton>
                         </ModalWrapper>
                     </Background>
@@ -414,12 +469,12 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
             <>
                 {showModal ? (
                     <Background ref={modalRef} onClick={closeModal}>
-                        <ModalWrapper showModal={showModal} style={{ width: "33%" }} >
+                        <ModalWrapper showModal={showModal} style={{width: "33%"}}>
                             <H2>Are you sure?</H2>
 
                             <ModalContent>
-                                <p >Do you want to accept this assignment?</p>
-                                <Button style={{  margin: "20px 10px 0px 0px" }}>
+                                <p>Do you want to accept this assignment?</p>
+                                <Button style={{margin: "20px 10px 0px 0px"}}>
                                     <ButtonContainer>
                                         <ButtonClick
                                             id="btnConfirmRespondAccept"
@@ -439,7 +494,7 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                                 aria-label="Close modal" id="btnCloseConfirmRespondAccept"
                                 onClick={() => setShowModal(prev => !prev)}
                             >
-                                <CloseOutlined />
+                                <CloseOutlined/>
                             </CloseModalButton>
                         </ModalWrapper>
                     </Background>
@@ -452,12 +507,12 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
             <>
                 {showModal ? (
                     <Background ref={modalRef} onClick={closeModal}>
-                        <ModalWrapper showModal={showModal} style={{ width: "33%" }} >
+                        <ModalWrapper showModal={showModal} style={{width: "33%"}}>
                             <H2>Are you sure?</H2>
 
                             <ModalContent>
                                 <p>Do you want to decline this assignment?</p>
-                                <Button style={{  margin: "20px 10px 0px 0px" }}>
+                                <Button style={{margin: "20px 10px 0px 0px"}}>
                                     <ButtonContainer>
                                         <ButtonClick
                                             id="btnConfirmRespondDecline"
@@ -474,10 +529,11 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                             </ModalContent>
 
                             <CloseModalButton
-                                aria-label="Close modal" id="btnCloseConfirmRespondDecline"
+                                aria-label="Close modal"
+                                id="btnCloseConfirmRespondDecline"
                                 onClick={() => setShowModal(prev => !prev)}
                             >
-                                <CloseOutlined />
+                                <CloseOutlined/>
                             </CloseModalButton>
                         </ModalWrapper>
                     </Background>
@@ -490,12 +546,13 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
             <>
                 {showModal ? (
                     <Background ref={modalRef} onClick={closeModal}>
-                        <ModalWrapper showModal={showModal} style={{ width: "600px" }} >
+                        <ModalWrapper showModal={showModal} style={{width: "600px"}}>
                             <H2>Are you sure?</H2>
 
                             <ModalContent>
-                                <p>Do you want to create a returning request for this <br/> asset?</p>
-                                <Button style={{  margin: "20px 10px 0px 0px" }}>
+                                <p>Do you want to create a returning request for
+                                    this <br/> asset?</p>
+                                <Button style={{margin: "20px 10px 0px 0px"}}>
                                     <ButtonContainer>
                                         <ButtonClick
                                             id="btnConfirmReturningRequest"
@@ -512,16 +569,82 @@ const Modal = ({ showModal, setShowModal, type, assignment, setIsReloadPage, sho
                             </ModalContent>
 
                             <CloseModalButton
-                                aria-label="Close modal" id="btnCloseConfirmReturningRequest"
+                                aria-label="Close modal"
+                                id="btnCloseConfirmReturningRequest"
                                 onClick={() => setShowModal(prev => !prev)}
                             >
-                                <CloseOutlined />
+                                <CloseOutlined/>
                             </CloseModalButton>
                         </ModalWrapper>
                     </Background>
                 ) : ""}
             </>
         );
+    }
+
+    function handleDeleteRequestAsset(requestAssetId) {
+        console.log(requestAsset)
+        console.log(requestAssetId)
+        requestAssetService.deleteRequestAsset(requestAssetId)
+            .then(data => {
+                console.log(data);
+                setShowModal(false);
+                setIsReloadPage(prev => !prev);
+            })
+            .catch(errors => {
+                console.log(errors)
+            })
+    }
+
+    if (type === "deleteRequestAsset") {
+        return (
+            <>
+                {showModal ? (
+                    <Background ref={modalRef} onClick={closeModal}>
+                        <ModalWrapper showModal={showModal} style={{width: "33%"}}>
+                            <H2>Are you sure?</H2>
+
+                            <ModalContent style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "flex-start",
+                                margin: "0"
+                            }}>
+                                <p style={{margin: "20px 20px 20px 75px"}}>Do you want to
+                                    delete this request for asset?</p>
+                                <Button style={{
+                                    justifyContent: "center",
+                                    margin: "10px 0px 0px 0px"
+                                }}>
+                                    <ButtonContainer>
+                                        <ButtonClick
+                                            id="btnConfirmDeleteAsset"
+                                            className="active"
+                                            onClick={() => {
+                                                handleDeleteRequestAsset(requestAsset.id)
+                                            }}
+                                        >Delete</ButtonClick>
+                                    </ButtonContainer>
+                                    <ButtonContainer>
+                                        <ButtonClick id="bntCancelDeleteAsset"
+                                                     onClick={() => setShowModal(prev => !prev)}
+                                        >Cancel</ButtonClick>
+                                    </ButtonContainer>
+                                </Button>
+                            </ModalContent>
+
+                            <CloseModalButton
+                                aria-label="Close modal" id="btnCloseConfirmDeleteAsset"
+                                onClick={() => setShowModal(prev => !prev)}
+                            >
+                                <CloseOutlined/>
+                            </CloseModalButton>
+                        </ModalWrapper>
+                    </Background>
+                ) : ""}
+            </>
+        );
+
     } else {
         return (
             <></>

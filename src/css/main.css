@@ -666,7 +666,7 @@ fieldset:disabled .btn {
 .show > .btn-danger.dropdown-toggle:focus {
     box-shadow: 0 0 0 0.25rem rgba(225, 83, 97, 0.5);
 }
-.btn-danger:disabled,
+
 .btn-danger.disabled {
     color: #fff;
     background-color: #dc3545;
@@ -1178,5 +1178,5 @@ fieldset:disabled .btn {
 }
 
 .disabled {
-    color: black !important;
+    color: #c7c7c7 !important;
 }

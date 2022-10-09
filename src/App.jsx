@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import ManageUser from "./pages/ManageUser";
@@ -14,6 +14,7 @@ import EditAsset from "./pages/EditAsset";
 import RequestForReturning from "./pages/RequestForReturning";
 import EditAssignment from "./pages/EditAssignment";
 import ReportPage from "./pages/ReportPage";
+import CreateRequestAssets from "./pages/CreateRequestAssets";
 
 const App = () => {
     return (
@@ -22,6 +23,11 @@ const App = () => {
                 <Route path='/home' element={
                     <PrivateRoute>
                         <Home />
+                    </PrivateRoute>
+                } />
+                <Route path='/request-assets' element={
+                    <PrivateRoute>
+                        <CreateRequestAssets />
                     </PrivateRoute>
                 } />
                 {/* Manage User */}

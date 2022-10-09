@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import "../../css/main.css"
-import { ArrowDropDownOutlined, CloseOutlined, DoneOutlined } from '@mui/icons-material';
+import {ArrowDropDownOutlined, CloseOutlined, DoneOutlined} from '@mui/icons-material';
 import CategoriesService from "../../service/CategoriesService";
 import UserService from "../../service/UserService";
 import AssetsService from "../../service/AssetsService";
@@ -298,7 +298,7 @@ const CreateNewAssetMain = () => {
     const [today, setToday] = useState();
 
     // ===== TOAST =====
-    const [dataToast, setDataToast] = useState({ message: "alo alo", type: "success" });
+    const [dataToast, setDataToast] = useState({message: "alo alo", type: "success"});
     const toastRef = useRef(null);  // useRef có thể gọi các hàm bên trong của Toast
     // bằng các dom event, javascript, ...
 
@@ -356,8 +356,8 @@ const CreateNewAssetMain = () => {
             }
             AssetsService.createNewAsset(assetData)
                 .then(res => {
-                    if (res.data){
-                        localStorage.setItem("assetSaved",JSON.stringify(res.data))
+                    if (res.data) {
+                        localStorage.setItem("assetSaved", JSON.stringify(res.data))
                     }
                     navigate("/manage-asset")
                 })
@@ -371,14 +371,13 @@ const CreateNewAssetMain = () => {
     }
 
 
-
     function handleAddCategoryClick(id, name) {
 
         CategoriesService.createCategory(id.toUpperCase(), name)
             .then(res => {
                 setIsAddNewCategory(true)
                 // Toast
-                const dataToast = { message: "Add new category success", type: "success" };
+                const dataToast = {message: "Add new category success", type: "success"};
                 showToastFromOut(dataToast);
             })
             .catch(errors => {
@@ -419,40 +418,40 @@ const CreateNewAssetMain = () => {
                 <FormTitleItem>Name</FormTitleItem>
                 <FormTitleItem>Category</FormTitleItem>
                 <FormTitleItem>Specification</FormTitleItem>
-                <FormTitleItem style={{ marginTop: "15px" }}>Installed
+                <FormTitleItem style={{marginTop: "15px"}}>Installed
                     Date</FormTitleItem>
                 <FormTitleItem>State</FormTitleItem>
             </FormTitle>
             <FormContent>
                 <FormContentItem>
                     <InputText id='createAsset_Name' type="text"
-                        className='borderPrimary'
+                               className='borderPrimary'
                                maxLength={100}
-                        onChange={(e) => {
-                            setAssetName(e.currentTarget.value)
-                        }}
+                               onChange={(e) => {
+                                   setAssetName(e.currentTarget.value)
+                               }}
                     ></InputText>
                 </FormContentItem>
                 <CategoryContainer id="createAsset_Category"
-                    className="dropdown-check-list-create-asset"
-                    tabindex="100" style={{ margin: "5px 20px" }}>
+                                   className="dropdown-check-list-create-asset"
+                                   tabindex="100" style={{margin: "5px 20px"}}>
                     <CategoryTitle className="anchor-create-asset" onClick={() => {
                         setToggleCategory()
                     }}>
                         <CategorySpan>{category ? category.name : ""}</CategorySpan>
                         <CategoryIcon>
-                            <ArrowDropDownOutlined />
+                            <ArrowDropDownOutlined/>
                         </CategoryIcon>
                     </CategoryTitle>
-                    <CategoryUl className="items-create-asset" style={{ padding: "0" }}>
+                    <CategoryUl className="items-create-asset" style={{padding: "0"}}>
                         <CategoryLiContainer id="list-category-id">
                             {categories.map((item) => <CategoryLi id={item.id}
-                                onClick={() => {
-                                    handleChooseCategory({ item: item })
-                                    setCategoryError(undefined)
+                                                                  onClick={() => {
+                                                                      handleChooseCategory({item: item})
+                                                                      setCategoryError(undefined)
 
-                                }}>
-                                <LiSpan  >{item.name}</LiSpan>
+                                                                  }}>
+                                <LiSpan>{item.name}</LiSpan>
                             </CategoryLi>)}
                         </CategoryLiContainer>
                         <AddCategoryContainer>
@@ -482,18 +481,18 @@ const CreateNewAssetMain = () => {
                                         <CategoryInput id="textCategoryName"
                                                        maxLength={100}
                                                        type="text"
-                                            onChange={(e) => {
-                                                setCategoryName(e.currentTarget.value)
-                                                setCategoryError(undefined)
-                                            }} />
+                                                       onChange={(e) => {
+                                                           setCategoryName(e.currentTarget.value)
+                                                           setCategoryError(undefined)
+                                                       }}/>
                                         <PreflixInput id="textCategoryPrefix"
-                                            type="text"
+                                                      type="text"
                                                       maxLength={4}
                                                       onChange={(e) => {
-                                                setCategoryPrefix(e.currentTarget.value.replace(/[^a-z\d ]/gi, ''))
-                                                setCategoryError(undefined)
-                                            }}
-                                            value={categoryPrefix}
+                                                          setCategoryPrefix(e.currentTarget.value.replace(/[^a-z\d ]/gi, ''))
+                                                          setCategoryError(undefined)
+                                                      }}
+                                                      value={categoryPrefix}
                                         />
                                     </AddCategoryInputContainer>
                                     <AddCategoryOptionContainer>
@@ -506,17 +505,19 @@ const CreateNewAssetMain = () => {
                                             onClick={() => handleAddCategoryClick(categoryPrefix, categoryName)}
                                         />
                                         <CloseOutlined id="closeAddCategory"
-                                            style={{
-                                                marginLeft: "10px", cursor: "pointer"
-                                            }}
-                                            onClick={() => {
-                                                setIsAddNewCategory(true)
-                                                setCategoryError(undefined)
-                                            }}
+                                                       style={{
+                                                           marginLeft: "10px",
+                                                           cursor: "pointer"
+                                                       }}
+                                                       onClick={() => {
+                                                           setIsAddNewCategory(true)
+                                                           setCategoryError(undefined)
+                                                       }}
                                         />
                                     </AddCategoryOptionContainer>
                                 </div>}
-                                {categoryError ? (<Error>{categoryError.message}</Error>) : ('')}
+                                {categoryError ? (
+                                    <Error>{categoryError.message}</Error>) : ('')}
                             </div>
                         </AddCategoryContainer>
                     </CategoryUl>
@@ -524,41 +525,43 @@ const CreateNewAssetMain = () => {
 
                 <FormContentItem>
                     <TextArea id='createAsset_Specification' rows="3" cols="46"
-                        className='borderPrimary'
+                              className='borderPrimary'
                               maxLength={200}
                               onChange={(e) => {
-                            setSpecification(e.currentTarget.value)
-                            setAssetError(undefined)
-                        }}
+                                  setSpecification(e.currentTarget.value)
+                                  setAssetError(undefined)
+                              }}
                     ></TextArea>
                 </FormContentItem>
                 <FormContentItem>
                     <InputDate id='createAsset_InstalledDate' type="date"
-                        className="borderPrimary"
-                        max={today}
-                        onChange={(e) => {
-                            setInstalledDate(e.target.value)
-                            setAssetError(undefined)
-                        }}
+                               className="borderPrimary"
+                               max={today}
+                               onChange={(e) => {
+                                   setInstalledDate(e.target.value)
+                                   setAssetError(undefined)
+                               }}
                     ></InputDate>
                 </FormContentItem>
                 <FormContentItemCheckbox id="createAsset_Radio">
                     <Label id='createAsset_RadioAvailable'>
-                        <InputRadio id="radioAvailable" type="radio" name="createAsset_RadioAvailable"
-                            defaultChecked value="AVAILABLE"
-                            onChange={(e) => {
-                                setAssetState(e.target.value)
-                                setAssetError(undefined)
-                            }} />
+                        <InputRadio id="radioAvailable" type="radio"
+                                    name="createAsset_RadioAvailable"
+                                    defaultChecked value="AVAILABLE"
+                                    onChange={(e) => {
+                                        setAssetState(e.target.value)
+                                        setAssetError(undefined)
+                                    }}/>
                         <InputRadioSpan>Available</InputRadioSpan>
                     </Label>
                     <Label id='createAsset_RadioNotAvailable'>
-                        <InputRadio id="radioNotAvailable" type="radio" name="createAsset_RadioAvailable"
-                            value="NOT_AVAILABLE"
-                            onChange={(e) => {
-                                setAssetState(e.target.value)
-                                setAssetError(undefined)
-                            }} />
+                        <InputRadio id="radioNotAvailable" type="radio"
+                                    name="createAsset_RadioAvailable"
+                                    value="NOT_AVAILABLE"
+                                    onChange={(e) => {
+                                        setAssetState(e.target.value)
+                                        setAssetError(undefined)
+                                    }}/>
                         <InputRadioSpan>Not Available</InputRadioSpan>
                     </Label>
                 </FormContentItemCheckbox>
@@ -572,7 +575,7 @@ const CreateNewAssetMain = () => {
                                 + (isAllFilled() ? '' : 'disabled')
                             }
 
-                            style={{ fontSize: "1rem" }}
+                            style={{fontSize: "1rem"}}
                             onClick={handleSaveNewAsset}
                         >
                             Save

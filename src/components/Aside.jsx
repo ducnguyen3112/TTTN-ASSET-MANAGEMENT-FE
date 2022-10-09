@@ -94,6 +94,7 @@ const Aside = (props) => {
         setManageUserIsActive(false);
         setManageAssignmentIsActive(false);
         setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(false);
         setReportIsActive(false);
         setManageAssetIsActive(false);
     }
@@ -105,6 +106,7 @@ const Aside = (props) => {
         setManageUserIsActive(true);
         setManageAssignmentIsActive(false);
         setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(false);
         setReportIsActive(false);
         setManageAssetIsActive(false);
     }
@@ -116,6 +118,7 @@ const Aside = (props) => {
         setManageUserIsActive(false);
         setManageAssignmentIsActive(false);
         setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(false);
         setReportIsActive(false);
         setManageAssetIsActive(true);
     }
@@ -127,6 +130,7 @@ const Aside = (props) => {
         setManageUserIsActive(false);
         setManageAssignmentIsActive(true);
         setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(false);
         setReportIsActive(false);
         setManageAssetIsActive(false);
     }
@@ -138,6 +142,19 @@ const Aside = (props) => {
         setManageUserIsActive(false);
         setManageAssignmentIsActive(false);
         setManageRequestForReturningIsActive(true);
+        setManageRequestForAssetIsActive(false);
+        setReportIsActive(false);
+        setManageAssetIsActive(false);
+    }
+
+    // Request For Returning
+    const [isRequestForAssetIsActive, setManageRequestForAssetIsActive] = useState(props.active === "requestForReturning" ? true : false);
+    const handleClickRequestForAsset = () => {
+        setHomeIsActive(false);
+        setManageUserIsActive(false);
+        setManageAssignmentIsActive(false);
+        setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(true);
         setReportIsActive(false);
         setManageAssetIsActive(false);
     }
@@ -149,6 +166,7 @@ const Aside = (props) => {
         setManageUserIsActive(false);
         setManageAssignmentIsActive(false);
         setManageRequestForReturningIsActive(false);
+        setManageRequestForAssetIsActive(false);
         setReportIsActive(true);
         setManageAssetIsActive(false);
     }
@@ -168,9 +186,6 @@ const Aside = (props) => {
                             onClick={handleClickHome}
                             id="Aside_Home"
                             >
-                    {/* <IconSpan>
-                        <HomeOutlined style={{ fontSize: "1.6rem", transition: "all 300ms ease" }} />
-                    </IconSpan> */}
                     <H3>Home</H3>
                 </LinkStyled>
                 {props.isUser ?
@@ -181,12 +196,6 @@ const Aside = (props) => {
                                         onClick={handleClickManageUser}
                                         id="Aside_ManageUser_Admin"
                                         >
-                                {/* <IconSpan>
-                                    <PersonOutlineOutlined style={{
-                                        fontSize: "1.6rem",
-                                        transition: "all 300ms ease"
-                                    }}/>
-                                </IconSpan> */}
                                 <H3>Manage User</H3>
                             </LinkStyled>
                             <LinkStyled to={"/manage-asset"}
@@ -194,12 +203,6 @@ const Aside = (props) => {
                                         onClick={handleClickManageAsset}
                                         id="Aside_ManageAsset_Admin"
                                         >
-                                {/* <IconSpan>
-                                    <WebAssetOutlined style={{
-                                        fontSize: "1.6rem",
-                                        transition: "all 300ms ease"
-                                    }}/>
-                                </IconSpan> */}
                                 <H3>Manage Asset</H3>
                             </LinkStyled>
                             <LinkStyled to={"/manage-assignment"}
@@ -207,12 +210,6 @@ const Aside = (props) => {
                                         onClick={handleClickManageAssignment}
                                         id="Aside_ManageAssignment_Admin"
                                         >
-                                {/* <IconSpan>
-                                    <AssignmentIndOutlined style={{
-                                        fontSize: "1.6rem",
-                                        transition: "all 300ms ease"
-                                    }}/>
-                                </IconSpan> */}
                                 <H3>Manage Assignment</H3>
                             </LinkStyled>
                             <LinkStyled to={"/request-for-returning"}
@@ -220,25 +217,20 @@ const Aside = (props) => {
                                         onClick={handleClickRequestForReturning}
                                         id="Aside_RequestForReturning_Admin"
                                         >
-                                {/* <IconSpan>
-                                    <AssignmentReturnOutlined style={{
-                                        fontSize: "1.6rem",
-                                        transition: "all 300ms ease"
-                                    }}/>
-                                </IconSpan> */}
                                 <H3>Request for Returning</H3>
+                            </LinkStyled>
+                            <LinkStyled to={"/request-for-returning"}
+                                        className={isRequestForAssetIsActive ? "active" : null}
+                                        onClick={handleClickRequestForAsset}
+                                        id="Aside_RequestForReturning_Admin"
+                            >
+                                <H3>Request for Assets</H3>
                             </LinkStyled>
                             <LinkStyled to={"/assets/report"}
                                         className={isReportActive ? "active" : null}
                                         onClick={handleClickReport}
                                         id="Aside_Report_Admin"
                                         >
-                                {/* <IconSpan>
-                                    <ReportGmailerrorredOutlined style={{
-                                        fontSize: "1.6rem",
-                                        transition: "all 300ms ease"
-                                    }}/>
-                                </IconSpan> */}
                                 <H3>Report</H3>
                             </LinkStyled>
                         </div>
