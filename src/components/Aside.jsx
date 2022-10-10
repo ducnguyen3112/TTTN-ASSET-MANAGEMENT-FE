@@ -148,7 +148,7 @@ const Aside = (props) => {
     }
 
     // Request For Returning
-    const [isRequestForAssetIsActive, setManageRequestForAssetIsActive] = useState(props.active === "requestForReturning" ? true : false);
+    const [isRequestForAssetIsActive, setManageRequestForAssetIsActive] = useState(props.active === "requestForAsset" ? true : false);
     const handleClickRequestForAsset = () => {
         setHomeIsActive(false);
         setManageUserIsActive(false);
@@ -219,7 +219,7 @@ const Aside = (props) => {
                                         >
                                 <H3>Request for Returning</H3>
                             </LinkStyled>
-                            <LinkStyled to={"/request-for-returning"}
+                            <LinkStyled to={"/manage-request-for-asset"}
                                         className={isRequestForAssetIsActive ? "active" : null}
                                         onClick={handleClickRequestForAsset}
                                         id="Aside_RequestForReturning_Admin"

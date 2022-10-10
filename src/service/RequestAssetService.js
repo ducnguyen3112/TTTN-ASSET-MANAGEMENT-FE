@@ -55,6 +55,18 @@ class RequestAssetService {
             },
         )
     }
+
+    changeStateRequestAsset(requestAssetId,state) {
+        const url = AXIOS_API_URL + `/admin/api/request-assets/states?id=${requestAssetId}&state=${state}`;
+        return axios.put(
+            url,
+             {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                }
+            },
+        )
+    }
 }
 
 export default new RequestAssetService()
