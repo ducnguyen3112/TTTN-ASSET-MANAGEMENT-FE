@@ -15,6 +15,7 @@ import RequestForReturning from "./pages/RequestForReturning";
 import EditAssignment from "./pages/EditAssignment";
 import ReportPage from "./pages/ReportPage";
 import CreateRequestAssets from "./pages/CreateRequestAssets";
+import EditRequestAssets from "./pages/EditRequestAssets";
 
 const App = () => {
     return (
@@ -25,9 +26,14 @@ const App = () => {
                         <Home />
                     </PrivateRoute>
                 } />
-                <Route path='/request-assets' element={
+                <Route path='/create-request-asset' element={
                     <PrivateRoute>
                         <CreateRequestAssets />
+                    </PrivateRoute>
+                } />
+                <Route path='/edit-request-asset/:id' element={
+                    <PrivateRoute>
+                        <EditRequestAssets />
                     </PrivateRoute>
                 } />
                 {/* Manage User */}

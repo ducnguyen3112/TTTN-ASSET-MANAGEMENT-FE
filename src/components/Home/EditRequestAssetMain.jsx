@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import styled from "styled-components";
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import "../../css/main.css"
 import {ArrowDropDownOutlined} from "@mui/icons-material";
 import CategoriesService from "../../service/CategoriesService";
 import RequestAssetService from "../../service/RequestAssetService";
+import requestAssetService from "../../service/RequestAssetService";
 
 const Container = styled.div`
     display: flex;
@@ -262,10 +263,12 @@ const CategorySpan = styled.span`
     min-width: 260px;
     padding: 10px 0px 10px 20px;
 `
-const CreateRequestAssetMain = () => {
+const EditRequestAssetMain = (props) => {
+    const {id}= useParams();
     const navigate = useNavigate();
     const [quantity, setQuantity] = useState();
     const [note, setNote] = useState();
+    const [categoryId, setCategoryId] = useState();
     const [category, setCategory] = useState();
     const [categories, setCategories] = useState([]);
 
@@ -278,6 +281,7 @@ const CreateRequestAssetMain = () => {
                 console.log(errors.message)
             })
     }
+
     const setToggleCategory = () => {
         var checkList = document.getElementById('createAsset_Category');
         if (checkList.classList.contains('visible-create-asset')) {
@@ -289,26 +293,32 @@ const CreateRequestAssetMain = () => {
 
     const handleChooseCategory = (props) => {
         setCategory(props.item);
+        setCategoryId(props.item.id);
         setToggleCategory();
     }
 
     useEffect(() => {
         getAllCategories()
+        if (props.data) {
+            setQuantity(props.data.quantity);
+            setNote(props.data.note);
+            setCategoryId(props.data.categoryId)
+        }
     }, []);
 
-
-    function handleCreateRequestAsset() {
-        const requestAssetData = {
-            categoryId: category.id,
-            note: note,
-            quantity: quantity
+    function handleEditRequestAsset() {
+        const data ={
+            'categoryId': categoryId,
+            'note': note,
+            'quantity': quantity
         }
-        RequestAssetService.createNewRequestAsset(requestAssetData)
-            .then(res => {
-                navigate('/home')
+        requestAssetService.editRequestAsset(id,data)
+            .then(res=>{
+                console.log(res.data)
+                navigate('/home');
             })
-            .catch(errors => {
-                console.log(errors.message)
+            .catch(err=>{
+                console.log(err)
             })
     }
 
@@ -332,7 +342,7 @@ const CreateRequestAssetMain = () => {
                                            onClick={() => {
                                                setToggleCategory()
                                            }}>
-                                <CategorySpan>{category ? category.name : ""}</CategorySpan>
+                                <CategorySpan>{category ? category.name : props.data.categoryName}</CategorySpan>
                                 <CategoryIcon>
                                     <ArrowDropDownOutlined/>
                                 </CategoryIcon>
@@ -350,12 +360,14 @@ const CreateRequestAssetMain = () => {
                             </CategoryUl>
                         </CategoryContainer>
                         <InputText type="number" className='borderPrimary'
+                                   value={quantity ? quantity : 0}
                                    onChange={(e) => {
                                        setQuantity(e.target.value)
                                    }}
                         ></InputText>
                         <TextArea id='createAsset_Specification' rows="5" cols="46"
                                   className='borderPrimary'
+                                  value={note ? note : ''}
                                   onChange={(e) => {
                                       setNote(e.target.value)
                                   }}
@@ -366,9 +378,9 @@ const CreateRequestAssetMain = () => {
                         <button
                             type="button"
                             className={'btn btn-login btn-danger btn-lg ' +
-                                (category && quantity ? '' : 'disabled')}
+                                (categoryId && quantity ? '' : 'disabled')}
                             style={{fontSize: "1rem"}}
-                            onClick={handleCreateRequestAsset}
+                            onClick={handleEditRequestAsset}
                         >
                             Save
                         </button>
@@ -379,4 +391,4 @@ const CreateRequestAssetMain = () => {
     )
 }
 
-export default CreateRequestAssetMain
+export default EditRequestAssetMain

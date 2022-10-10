@@ -465,6 +465,7 @@ const HomeMain = ({reRenderData, setReRenderData}) => {
         requestAssetService.getListRequestAssets(page, 5)
             .then(data => {
                 setRequestAssets(data.data.list);
+                console.log(data.data.list)
                 setTotalPage(data.data.last_page);
             })
             .catch(errors => {
@@ -473,7 +474,7 @@ const HomeMain = ({reRenderData, setReRenderData}) => {
     }
 
     function handleClickDeleteRequestAsset(value) {
-        openModal({ type: "deleteRequestAsset", requestAsset: value })
+        openModal({type: "deleteRequestAsset", requestAsset: value})
     }
 
     return (
@@ -483,7 +484,7 @@ const HomeMain = ({reRenderData, setReRenderData}) => {
                 <AddContainer>
                     <H2 id='assignment-title'>My Request For Assets</H2>
                     <Item className="add-product"
-                          onClick={() => navigate("/request-assets")}>
+                          onClick={() => navigate("/create-request-asset")}>
                         <h3>Request for assets</h3>
                     </Item>
                 </AddContainer>
@@ -560,7 +561,17 @@ const HomeMain = ({reRenderData, setReRenderData}) => {
                                                         {value.state}
                                                     </Td>
                                                     <Td style={{border: 'none'}}>
-                                                        <Button>
+                                                        <Button
+                                                            disabled={value.state !== 'Waiting for approval' ? true : false}
+                                                            onClick={() => navigate(`/edit-request-asset/${value.id}`, {
+                                                                state: {
+                                                                    categoryName: value.categoryName,
+                                                                    quantity: value.quantity,
+                                                                    note: value.note,
+                                                                    categoryId: value.categoryId
+                                                                }
+                                                            })}
+                                                        >
                                                             <FontAwesomeIcon
                                                                 style={{
                                                                     fontSize: '1.2rem',
