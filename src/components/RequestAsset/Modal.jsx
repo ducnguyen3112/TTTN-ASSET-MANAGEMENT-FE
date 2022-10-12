@@ -6,6 +6,7 @@ import {CloseOutlined} from "@mui/icons-material";
 import "../../css/main.css";
 import assignmentService from "../../service/AssignmentService";
 import RequestReturningService from "../../service/RequestReturningService";
+import requestAssetService from "../../service/RequestAssetService";
 
 
 
@@ -152,42 +153,9 @@ const ButtonContainer = styled.div`
     margin: 0 22px 22px 0;
 `
 
-const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage, returningId ,showToastFromOut}) => {
+const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage, returningId ,showToastFromOut,requestAsset}) => {
     //complete returning request
-    function handleCompleteRequest() {
-        console.log(requestPayload);
-        ReturningRequestResponseService.completeRequest(requestPayload)
-            .then(res => {
-                setShowModal(false);
-                // Toast
-                const dataToast = { message: "Success updated !", type: "success" };
-                showToastFromOut(dataToast);
-                setIsReloadPage(prev => !prev);
-            })
-            .catch(errors => {
-                console.log(errors)
-            })
-    }
-
-
-
-        //cancel request Returning
-        function handleRequestReturning() {
-            RequestReturningService.cancelRequestReturning(returningId)
-                .then(res=>{
-                    if (res.status===200){
-                        const dataToast = { message: "Cancel request returning successfully!", type: "success" };
-                        showToastFromOut(dataToast);
-                        setShowModal(false);
-                        setIsReloadPage(prev => !prev);
-                    }
-                })
-                .catch(errors=>{
-                    console.log(errors)
-                })
-    
-        }
-
+    console.log(requestAsset)
     // MODAL
     const modalRef = useRef();
     const closeModal = (e) => {
@@ -196,65 +164,18 @@ const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage,
         }
     }
 
-    const keyPress = useCallback(
-        (e) => {
-            if (e.key === 'Escape' && showModal) {
-                setShowModal(false);
-            }
-        },
-        [setShowModal, showModal]
-    );
+    function handleRejectRequestAsset() {
+        requestAssetService.changeStateRequestAsset(requestAsset.id,'Rejected')
+            .then(res=>{
+                console.log(res.data)
+                setShowModal(false)
+            })
+            .catch(err=>{
+                console.log(err)
+            })
+    }
 
-    useEffect(
-        () => {
-            document.addEventListener('keydown', keyPress);
-            return () => document.removeEventListener('keydown', keyPress);
-        },
-        [keyPress]
-    );
-
-
-
-
-if (type === "confirmComplete") {
-    return (
-        <>
-            {showModal ? (
-                <Background ref={modalRef} onClick={closeModal}>
-                    <ModalWrapper showModal={showModal} style={{ width: "33%" }} >
-                        <H2>Are you sure?</H2>
-
-                        <ModalContentDelete>
-                            <p >Do you want to make this returning request as 'Completed'?</p>
-                            <Button style={{ margin: "20px 10px 0px 0px" }}>
-                                <ButtonContainer>
-                                    <ButtonClick
-                                        id="btnCompleteRequest"
-                                        className="active"
-                                        onClick={() => handleCompleteRequest()}
-                                    >Yes</ButtonClick>
-                                </ButtonContainer>
-                                <ButtonContainer>
-                                    <ButtonClick id="btnCancelRequest"
-                                        onClick={() => setShowModal(prev => !prev)}
-                                    >No</ButtonClick>
-                                </ButtonContainer>
-                            </Button>
-                        </ModalContentDelete>
-
-                        <CloseModalButton
-                            aria-label="Close modal" id="btnCloseConfirmLogout"
-                            onClick={() => setShowModal(prev => !prev)}
-                        >
-                            <CloseOutlined />
-                        </CloseModalButton>
-                    </ModalWrapper>
-                </Background>
-            ) : ""}
-        </>
-    );
-} 
-if (type === "cancelRequestReturning") {
+    if (type === "rejectRequestAsset") {
         return (
             <>
                 {showModal ? (
@@ -263,13 +184,13 @@ if (type === "cancelRequestReturning") {
                             <H2>Are you sure?</H2>
 
                             <ModalContentDelete>
-                                <p >Do you want to cancel this returning request?</p>
+                                <p >Do you want to reject this request for asset?</p>
                                 <Button style={{  margin: "20px 10px 0px 0px" }}>
                                     <ButtonContainer>
                                         <ButtonClick
                                             id="btnYesCancelReturn"
                                             className="active"
-                                             onClick={() => handleRequestReturning()}
+                                            onClick={handleRejectRequestAsset()}
                                         >Yes</ButtonClick>
                                     </ButtonContainer>
                                     <ButtonContainer>

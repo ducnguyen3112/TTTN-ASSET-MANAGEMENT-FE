@@ -219,7 +219,7 @@ const Aside = (props) => {
                                         >
                                 <H3>Request for Returning</H3>
                             </LinkStyled>
-                            <LinkStyled to={"/request-for-asset"}
+                            <LinkStyled to={"/request-for-returning"}
                                         className={isRequestForAssetIsActive ? "active" : null}
                                         onClick={handleClickRequestForAsset}
                                         id="Aside_RequestForAsset_Admin"
