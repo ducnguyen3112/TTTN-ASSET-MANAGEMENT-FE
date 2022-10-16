@@ -1,16 +1,23 @@
 import styled from "styled-components";
 import "../../css/main.css";
-import { useEffect, useRef, useState } from "react";
-import { ReplayOutlined, CloseOutlined, CheckOutlined } from "@mui/icons-material";
-import axios from "axios";
-import Modal from "./Modal";
-import Toast from "./Toast";
+import {useEffect, useRef, useState} from "react";
 import {
     ArrowDropDownOutlined,
     ArrowDropUpOutlined,
-} from '@mui/icons-material';
+    CheckOutlined,
+    CloseOutlined,
+    ReplayOutlined
+} from "@mui/icons-material";
+import Modal from "./Modal";
+import Toast from "./Toast";
 import AssignmentService from "../../service/AssignmentService";
 import DateFormatterService from "../../service/DateFormatterService";
+import {useNavigate} from "react-router-dom";
+import requestAssetService from "../../service/RequestAssetService";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPencilAlt} from "@fortawesome/free-solid-svg-icons";
+import PagingItem from "../ManageAsset/PagingItem";
+
 const Container = styled.div`
     margin-top: 100px;
 `;
@@ -49,6 +56,9 @@ const Td = styled.td`
     height: 2.8rem;
     border-bottom: 1px solid var(--color-light);
     color: #65676a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 `;
 
 const A = styled.a`
@@ -216,15 +226,14 @@ const SearchIcon = styled.div`
 `;
 
 const AddContainer = styled.div`
-    margin-left: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     height: auto;
 `;
 
 const Item = styled.div`
-    width: 174px;
+    width: auto;
     height: 40px;
     background: var(--color-primary);
     display: flex;
@@ -254,7 +263,7 @@ const Item = styled.div`
 
 const Th = styled.th`
     border-bottom: 1px solid #34383c;
-    min-width: 120px;
+    min-width: 50px;
     color: #34383c;
 `;
 const ThButton = styled.th`
@@ -328,7 +337,8 @@ const ButtonInfo = styled.button`
     color: #576be3;
 `
 
-const HomeMain = ({ reRenderData, setReRenderData }) => {
+const HomeMain = ({reRenderData, setReRenderData}) => {
+    const navigate = useNavigate();
     const InputRef = useRef(null);
     const [isSearch, setIsSearch] = useState(false);
     const [timkiem, setTimKiem] = useState("");
@@ -349,6 +359,12 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
     // User
     const userStaffCode = JSON.parse(localStorage.getItem('user_info')).id;
     const [assignmentList, setAssignmentList] = useState([]);
+
+    // request for asset
+    const [requestAssets, setRequestAssets] = useState([]);
+    const [totalPage, setTotalPage] = useState(0);
+    const [page, setPage] = useState(1);
+    const [requestAssetModal, setRequestAssetModal] = useState();
 
     // Reload page
     const [isReloadPage, setIsReloadPage] = useState(false);
@@ -377,13 +393,20 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
             return result.data;
         };
         getAssignmentList();
+        getListRequestAsset();
     }, [isReloadPage])
+
+    useEffect(() => {
+        getListRequestAsset();
+    }, [page]);
+
 
     //Change 
     const openModal = (modal) => {
         setShowModal(prev => !prev);
         setTypeModal(modal.type);
         setDanhMucModal(modal.assignment);
+        setRequestAssetModal(modal.requestAsset);
     }
 
     const handleSortAssetCode = (sort) => {
@@ -427,7 +450,7 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
     }
 
     // ===== TOAST =====
-    const [dataToast, setDataToast] = useState({ message: "alo alo", type: "success" });
+    const [dataToast, setDataToast] = useState({message: "alo alo", type: "success"});
     const toastRef = useRef(null);  // useRef có thể gọi các hàm bên trong của Toast
     // bằng các dom event, javascript, ...
 
@@ -437,14 +460,161 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
         toastRef.current.show();
     }
 
+    // request for asset
+    const getListRequestAsset = () => {
+        requestAssetService.getListRequestAssets(page, 5)
+            .then(data => {
+                setRequestAssets(data.data.list);
+                console.log(data.data.list)
+                setTotalPage(data.data.last_page);
+            })
+            .catch(errors => {
+                console.log(errors)
+            })
+    }
+
+    function handleClickDeleteRequestAsset(value) {
+        openModal({type: "deleteRequestAsset", requestAsset: value})
+    }
+
     return (
         <Container id='assignment-list'>
             <RecentOrders>
+                <AddContainer>
+                    <H2 id='assignment-title'>My Request For Assets</H2>
+                    <Item className="add-product"
+                          onClick={() => navigate("/create-request-asset")}>
+                        <h3>Request for assets</h3>
+                    </Item>
+                </AddContainer>
+                <div>
+                    <Table>
+                        <Thead>
+                            <Tr>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>ID</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>Asset type</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>Quantity</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>Requested date</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>Note</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>State</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <ThButton id='th-decline-button'></ThButton>
+                                <ThButton id='th-return-button'></ThButton>
+                            </Tr>
+                        </Thead>
+                        {
+                            isLoading ? (
+                                    <div className="spinner-border text-warning" style={{
+                                        color: "#e22027",
+                                        position: "absolute",
+                                        left: "50%"
+                                    }} role="status">
+                                        <span className="visually-hidden"></span>
+                                    </div>
+                                ) :
+                                (
+                                    <Tbody id='assignment-body'>
+                                        {
+                                            requestAssets.map(value =>
+                                                <Tr>
+                                                    <Td>
+                                                        {value.id}
+                                                    </Td>
+                                                    <Td>
+                                                        {value.categoryName}
+                                                    </Td>
+                                                    <Td>
+                                                        {value.quantity}
+                                                    </Td>
+                                                    <Td>
+                                                        {value.requestedDate}
+                                                    </Td>
+                                                    <Td data-toggle="tooltip"
+                                                        title={value.note}>
+                                                        {value.note}
+                                                    </Td>
+                                                    <Td>
+                                                        {value.state}
+                                                    </Td>
+                                                    <Td style={{border: 'none'}}>
+                                                        <Button
+                                                            disabled={value.state !== 'Waiting for approval' ? true : false}
+                                                            onClick={() => navigate(`/edit-request-asset/${value.id}`, {
+                                                                state: {
+                                                                    categoryName: value.categoryName,
+                                                                    quantity: value.quantity,
+                                                                    note: value.note,
+                                                                    categoryId: value.categoryId
+                                                                }
+                                                            })}
+                                                        >
+                                                            <FontAwesomeIcon
+                                                                style={{
+                                                                    fontSize: '1.2rem',
+                                                                    marginLeft: '25px',
+                                                                    color: value.state !== 'Waiting for approval' ? '#c6c6c6' : '#707070',
+                                                                }}
+                                                                icon={faPencilAlt}
+                                                            />
+                                                        </Button>
+                                                    </Td>
+                                                    <Td style={{border: 'none'}}>
+                                                        <Button
+                                                            disabled={value.state !== 'Waiting for approval' ? true : false}
+                                                            onClick={() => handleClickDeleteRequestAsset(value)}
+                                                        >
+                                                            <CloseOutlined
+                                                                style={{
+                                                                    border:
+                                                                        value.state !== 'Waiting for approval'
+                                                                            ? '2px solid #efbec4'
+                                                                            : '2px solid #de6a79',
+                                                                    borderRadius: '50%',
+                                                                    color: value.state !== 'Waiting for approval' ? '#efbec4' : '#de6a79',
+                                                                }}
+                                                            />
+                                                        </Button>
+                                                    </Td>
+                                                </Tr>
+                                            )
+                                        }
+                                    </Tbody>
+
+                                )
+                        }
+                    </Table>
+                    {totalPage > 0 ? PagingItem(page, totalPage, setPage) : <></>}
+                </div>
                 <H2 id='assignment-title'>My Assignment</H2>
                 {
                     assignmentList.length === 0 ?
                         <PictureNoResultFound id="No_Result_Found_Picture">
-                            <Img src="https://img.freepik.com/premium-vector/file-found-illustration-with-confused-people-holding-big-magnifier-search-no-result_258153-336.jpg?w=2000" alt="Not Found Result" />
+                            <Img
+                                src="https://img.freepik.com/premium-vector/file-found-illustration-with-confused-people-holding-big-magnifier-search-no-result_258153-336.jpg?w=2000"
+                                alt="Not Found Result"/>
                             <H1NoResultFound>Your assignment is empty</H1NoResultFound>
                         </PictureNoResultFound>
                         :
@@ -453,52 +623,67 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
                                 <Thead id='assignment-thead'>
                                     <Tr id='assignment-thead-tr'>
                                         <Th id="th_sort_container_code">
-                                            <ThContainer id="sort_container_code" onClick={() => {
-                                                handleSortAssetCode('asset.code')
-                                            }}>
+                                            <ThContainer id="sort_container_code"
+                                                         onClick={() => {
+                                                             handleSortAssetCode('asset.code')
+                                                         }}>
                                                 <ThSpan>Asset Code</ThSpan>
                                                 <ThSortIcon id="sort_by_code">
-                                                    {isSortAssetCode ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+                                                    {isSortAssetCode ?
+                                                        <ArrowDropUpOutlined/> :
+                                                        <ArrowDropDownOutlined/>}
                                                 </ThSortIcon>
                                             </ThContainer>
                                         </Th>
                                         <Th id="th_sort_container_name">
-                                            <ThContainer id="sort_container_name" onClick={() => {
-                                                handleSortAssetName('asset.name')
-                                            }}>
+                                            <ThContainer id="sort_container_name"
+                                                         onClick={() => {
+                                                             handleSortAssetName('asset.name')
+                                                         }}>
                                                 <ThSpan>Asset name</ThSpan>
                                                 <ThSortIcon id="sort_by_name">
-                                                    {isSortAssetName ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+                                                    {isSortAssetName ?
+                                                        <ArrowDropUpOutlined/> :
+                                                        <ArrowDropDownOutlined/>}
                                                 </ThSortIcon>
                                             </ThContainer>
                                         </Th>
                                         <Th id="th_sort_container_category">
-                                            <ThContainer id="sort_container_category" onClick={() => {
-                                                handleSortCategory('asset.category.name')
-                                            }}>
+                                            <ThContainer id="sort_container_category"
+                                                         onClick={() => {
+                                                             handleSortCategory('asset.category.name')
+                                                         }}>
                                                 <ThSpan>Category</ThSpan>
                                                 <ThSortIcon id="asset.category.name">
-                                                    {isSortCategory ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+                                                    {isSortCategory ?
+                                                        <ArrowDropUpOutlined/> :
+                                                        <ArrowDropDownOutlined/>}
                                                 </ThSortIcon>
                                             </ThContainer>
                                         </Th>
                                         <Th id="th_sort_container_date">
-                                            <ThContainer id="sort_container_date" onClick={() => {
-                                                handleSortAssignedDate('id.assignedDate')
-                                            }}>
+                                            <ThContainer id="sort_container_date"
+                                                         onClick={() => {
+                                                             handleSortAssignedDate('id.assignedDate')
+                                                         }}>
                                                 <ThSpan>Assigned Date</ThSpan>
                                                 <ThSortIcon id="sort_by_date">
-                                                    {isSortAssignedDate ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+                                                    {isSortAssignedDate ?
+                                                        <ArrowDropUpOutlined/> :
+                                                        <ArrowDropDownOutlined/>}
                                                 </ThSortIcon>
                                             </ThContainer>
                                         </Th>
                                         <Th id="th_sort_container_state">
-                                            <ThContainer id="sort_container_state" onClick={() => {
-                                                handleSortState('state')
-                                            }}>
+                                            <ThContainer id="sort_container_state"
+                                                         onClick={() => {
+                                                             handleSortState('state')
+                                                         }}>
                                                 <ThSpan>State</ThSpan>
                                                 <ThSortIcon id="sort_by_state">
-                                                    {isSortState ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
+                                                    {isSortState ?
+                                                        <ArrowDropUpOutlined/> :
+                                                        <ArrowDropDownOutlined/>}
                                                 </ThSortIcon>
                                             </ThContainer>
                                         </Th>
@@ -509,52 +694,89 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
                                 </Thead>
                                 {
                                     isLoading ? (
-                                        <div class="spinner-border text-warning" style={{ color: "#e22027", position: "absolute", left: "50%" }} role="status">
-                                            <span class="visually-hidden"></span>
-                                        </div>
-                                    ) :
+                                            <div class="spinner-border text-warning" style={{
+                                                color: "#e22027",
+                                                position: "absolute",
+                                                left: "50%"
+                                            }} role="status">
+                                                <span class="visually-hidden"></span>
+                                            </div>
+                                        ) :
                                         (
                                             <Tbody id='assignment-body'>
                                                 {assignmentList.map((assignmentDetail) =>
                                                     <Tr id='assignment-tbody-tr'>
-                                                        <Td id={'asset-code'+ assignmentDetail.assetCode} 
-                                                        onClick={() => openModal({ type: "detailAssignment", assignment: assignmentDetail })}>{assignmentDetail.assetCode}</Td>
+                                                        <Td id={'asset-code' + assignmentDetail.assetCode}
+                                                            onClick={() => openModal({
+                                                                type: "detailAssignment",
+                                                                assignment: assignmentDetail
+                                                            })}>{assignmentDetail.assetCode}</Td>
                                                         <Td id={'asset-name' + assignmentDetail.assetCode}
-                                                        onClick={() => openModal({ type: "detailAssignment", assignment: assignmentDetail })}>{assignmentDetail.assetName}</Td>
+                                                            onClick={() => openModal({
+                                                                type: "detailAssignment",
+                                                                assignment: assignmentDetail
+                                                            })}>{assignmentDetail.assetName}</Td>
                                                         <Td id={'category-name' + assignmentDetail.assetCode}
-                                                        onClick={() => openModal({ type: "detailAssignment", assignment: assignmentDetail })}>{assignmentDetail.assetCategoryName}</Td>
+                                                            onClick={() => openModal({
+                                                                type: "detailAssignment",
+                                                                assignment: assignmentDetail
+                                                            })}>{assignmentDetail.assetCategoryName}</Td>
                                                         <Td id={'assigned-date' + assignmentDetail.assetCode}
-                                                        onClick={() => openModal({ type: "detailAssignment", assignment: assignmentDetail })}>{DateFormatterService.dateFormat(assignmentDetail.assignedDate)}</Td>
+                                                            onClick={() => openModal({
+                                                                type: "detailAssignment",
+                                                                assignment: assignmentDetail
+                                                            })}>{DateFormatterService.dateFormat(assignmentDetail.assignedDate)}</Td>
                                                         <Td id={'state' + assignmentDetail.assetCode}
-                                                        onClick={() => openModal({ type: "detailAssignment", assignment: assignmentDetail })}>{assignmentDetail.state}</Td>
+                                                            onClick={() => openModal({
+                                                                type: "detailAssignment",
+                                                                assignment: assignmentDetail
+                                                            })}>{assignmentDetail.state}</Td>
                                                         <Td className="danger">
-                                                            <ButtonDelete id={"btn-edit-" + assignmentDetail.assetCode}
+                                                            <ButtonDelete
+                                                                id={"btn-edit-" + assignmentDetail.assetCode}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    openModal({ type: "respondAccept", assignment: assignmentDetail });
+                                                                    openModal({
+                                                                        type: "respondAccept",
+                                                                        assignment: assignmentDetail
+                                                                    });
                                                                 }}
                                                                 disabled={assignmentDetail.state === 'Waiting for acceptance' ? false : true}>
-                                                                <CheckOutlined style={{ color: assignmentDetail.state === 'Waiting for acceptance' ? '' : '#f6b4b8' }} />
+                                                                <CheckOutlined
+                                                                    style={{color: assignmentDetail.state === 'Waiting for acceptance' ? '' : '#f6b4b8'}}/>
                                                             </ButtonDelete>
                                                         </Td>
-                                                        <Td className="warning" >
-                                                            <Button id={'btn-reject-' + assignmentDetail.assetCode}
+                                                        <Td className="warning">
+                                                            <Button
+                                                                id={'btn-reject-' + assignmentDetail.assetCode}
                                                                 onClick={(e) => {
-                                                                    openModal({ type: "respondDecline", assignment: assignmentDetail });
+                                                                    openModal({
+                                                                        type: "respondDecline",
+                                                                        assignment: assignmentDetail
+                                                                    });
 
                                                                 }}
                                                                 disabled={assignmentDetail.state === 'Waiting for acceptance' ? false : true}
                                                             >
-                                                                <CloseOutlined style={{ color: assignmentDetail.state === 'Waiting for acceptance' ? '' : '##b1b1b1' }} />
+                                                                <CloseOutlined
+                                                                    style={{color: assignmentDetail.state === 'Waiting for acceptance' ? '' : '##b1b1b1'}}/>
                                                             </Button>
                                                         </Td>
                                                         <Td className="info">
-                                                            <ButtonInfo id={'btn-return-' + assignmentDetail.assetCode}
-                                                                onClick={(e) => { e.stopPropagation(); openModal({ type: "returningRequest", assignment: assignmentDetail }); }}
+                                                            <ButtonInfo
+                                                                id={'btn-return-' + assignmentDetail.assetCode}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openModal({
+                                                                        type: "returningRequest",
+                                                                        assignment: assignmentDetail
+                                                                    });
+                                                                }}
                                                                 attr
                                                                 disabled={assignmentDetail.requestReturningId !== null || assignmentDetail.state === 'Waiting for acceptance' ? true : false}
                                                             >
-                                                                <ReplayOutlined style={{ color: assignmentDetail.requestReturningId !== null || assignmentDetail.state === 'Waiting for acceptance' ? '#bcbcbc' : '' }} />
+                                                                <ReplayOutlined
+                                                                    style={{color: assignmentDetail.requestReturningId !== null || assignmentDetail.state === 'Waiting for acceptance' ? '#bcbcbc' : ''}}/>
                                                             </ButtonInfo>
                                                         </Td>
                                                     </Tr>
@@ -567,13 +789,14 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
                 }
             </RecentOrders>
             <Modal id='modal_assignment'
-                showModal={showModal}   //state Đóng mở modal
-                setShowModal={setShowModal} //Hàm Đóng mở modal
-                type={typeModal}    //Loại modal
-                assignment={danhMucModal}  //Dữ liệu bên trong modal
-                setIsReloadPage={setIsReloadPage}   //Hàm rerender khi dữ liệu thay đổi
-                handleClose={handleClose}   //Đóng tìm kiếm
-                showToastFromOut={showToastFromOut} //Hàm hiện toast
+                   showModal={showModal}   //state Đóng mở modal
+                   setShowModal={setShowModal} //Hàm Đóng mở modal
+                   type={typeModal}    //Loại modal
+                   assignment={danhMucModal}  //Dữ liệu bên trong modal
+                   setIsReloadPage={setIsReloadPage}   //Hàm rerender khi dữ liệu thay đổi
+                   handleClose={handleClose}   //Đóng tìm kiếm
+                   showToastFromOut={showToastFromOut} //Hàm hiện toast
+                   requestAsset={requestAssetModal}
             />
 
             {/* === TOAST === */}
@@ -584,7 +807,6 @@ const HomeMain = ({ reRenderData, setReRenderData }) => {
         </Container>
     );
 };
-
 
 
 export default HomeMain;

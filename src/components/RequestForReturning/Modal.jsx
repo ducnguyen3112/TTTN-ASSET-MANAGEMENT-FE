@@ -154,11 +154,10 @@ const ButtonContainer = styled.div`
 
 const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage, returningId ,showToastFromOut}) => {
     //complete returning request
-    function handleCompleteREquest() {
+    function handleCompleteRequest() {
         console.log(requestPayload);
         ReturningRequestResponseService.completeRequest(requestPayload)
             .then(res => {
-                console.log(res)
                 setShowModal(false);
                 // Toast
                 const dataToast = { message: "Success updated !", type: "success" };
@@ -232,7 +231,7 @@ if (type === "confirmComplete") {
                                     <ButtonClick
                                         id="btnCompleteRequest"
                                         className="active"
-                                        onClick={() => handleCompleteREquest()}
+                                        onClick={() => handleCompleteRequest()}
                                     >Yes</ButtonClick>
                                 </ButtonContainer>
                                 <ButtonContainer>

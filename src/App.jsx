@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
+import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
 import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
 import ManageUser from "./pages/ManageUser";
@@ -14,6 +14,9 @@ import EditAsset from "./pages/EditAsset";
 import RequestForReturning from "./pages/RequestForReturning";
 import EditAssignment from "./pages/EditAssignment";
 import ReportPage from "./pages/ReportPage";
+import CreateRequestAssets from "./pages/CreateRequestAssets";
+import EditRequestAssets from "./pages/EditRequestAssets";
+import ManageRequestAsset from "./pages/ManageRequestAsset";
 
 const App = () => {
     return (
@@ -22,6 +25,16 @@ const App = () => {
                 <Route path='/home' element={
                     <PrivateRoute>
                         <Home />
+                    </PrivateRoute>
+                } />
+                <Route path='/create-request-asset' element={
+                    <PrivateRoute>
+                        <CreateRequestAssets />
+                    </PrivateRoute>
+                } />
+                <Route path='/edit-request-asset/:id' element={
+                    <PrivateRoute>
+                        <EditRequestAssets />
                     </PrivateRoute>
                 } />
                 {/* Manage User */}
@@ -88,6 +101,12 @@ const App = () => {
                 <Route path='/request-for-returning' element={
                     <PrivateRoute>
                         <RequestForReturning />
+                    </PrivateRoute>
+                } />
+                {/* Request for asset */}
+                <Route path='/manage-request-asset' element={
+                    <PrivateRoute>
+                        <ManageRequestAsset />
                     </PrivateRoute>
                 } />
                 {/* DONE */}

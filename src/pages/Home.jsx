@@ -13,7 +13,6 @@ const Container = styled.div`
     gap: 1.8rem;
     grid-template-columns: 20rem auto;
 `
-
 const Home = () => {
 
 

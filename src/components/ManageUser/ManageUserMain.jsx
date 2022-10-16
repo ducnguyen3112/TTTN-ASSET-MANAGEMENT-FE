@@ -556,8 +556,6 @@ const ManageUserMain = () => {
         <Container>
             <H2>User List</H2>
             <OptionContainer>
-
-
                 <FilterContainer id="ManageUser_Filter" className="dropdown-check-list" tabindex="100">
                     <FilterTitle className="anchor" onClick={() => { handleClickTypeFilter() }}>
                         <FilterSpan>Type</FilterSpan>
