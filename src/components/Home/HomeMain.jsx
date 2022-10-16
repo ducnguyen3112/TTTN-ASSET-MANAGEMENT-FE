@@ -479,7 +479,6 @@ const HomeMain = ({reRenderData, setReRenderData}) => {
 
     return (
         <Container id='assignment-list'>
-
             <RecentOrders>
                 <AddContainer>
                     <H2 id='assignment-title'>My Request For Assets</H2>

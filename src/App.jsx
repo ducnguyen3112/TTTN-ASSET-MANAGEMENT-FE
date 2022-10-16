@@ -104,7 +104,7 @@ const App = () => {
                     </PrivateRoute>
                 } />
                 {/* Request for asset */}
-                <Route path='/manage-request-for-asset' element={
+                <Route path='/manage-request-asset' element={
                     <PrivateRoute>
                         <ManageRequestAsset />
                     </PrivateRoute>

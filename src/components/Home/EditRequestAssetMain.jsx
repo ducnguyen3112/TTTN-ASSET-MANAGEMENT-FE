@@ -375,6 +375,12 @@ const EditRequestAssetMain = (props) => {
                         ></TextArea>
                     </FormContentItem>
                     <ButtonContainer>
+                        <ButtonClick
+                            id='createAsset_Cancel'
+                            onClick={() => navigate("/home")}
+                        >Cancel</ButtonClick>
+                    </ButtonContainer>
+                    <ButtonContainer>
                         <button
                             type="button"
                             className={'btn btn-login btn-danger btn-lg ' +

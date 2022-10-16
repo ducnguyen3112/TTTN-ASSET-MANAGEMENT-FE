@@ -56,11 +56,12 @@ class RequestAssetService {
         )
     }
 
-    changeStateRequestAsset(requestAssetId,state) {
-        const url = AXIOS_API_URL + `/admin/api/request-assets/states?id=${requestAssetId}&state=${state}`;
+    changeStateRequestAsset(requestAssetId,data) {
+        const url = AXIOS_API_URL + `/admin/api/request-assets/${requestAssetId}/state`;
         return axios.put(
             url,
-             {
+            data,
+            {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                 }

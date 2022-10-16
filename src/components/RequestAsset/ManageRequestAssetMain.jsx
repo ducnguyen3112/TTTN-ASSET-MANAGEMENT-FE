@@ -352,7 +352,6 @@ const ManageRequestAssetMain = () => {
     const [requestAssets, setRequestAssets] = useState([]);
     const [totalPage, setTotalPage] = useState(0);
     const [page, setPage] = useState(1);
-    const [requestAssetModal, setRequestAssetModal] = useState();
 
     // Reload page
     const [isReloadPage, setIsReloadPage] = useState(false);
@@ -360,14 +359,14 @@ const ManageRequestAssetMain = () => {
 
     useEffect(() => {
         getListRequestAsset();
-    }, [page]);
+    }, [page,isReloadPage]);
 
 
     //Change
     const openModal = (modal) => {
         setShowModal(prev => !prev);
         setTypeModal(modal.type);
-        setRequestAssetModal(modal.requestAsset);
+        setDanhMucModal(modal.requestAsset);
     }
 
 
@@ -387,7 +386,6 @@ const ManageRequestAssetMain = () => {
         requestAssetService.getListRequestAssets(page, 5)
             .then(data => {
                 setRequestAssets(data.data.list);
-                console.log(data.data.list)
                 setTotalPage(data.data.last_page);
             })
             .catch(errors => {
@@ -395,7 +393,11 @@ const ManageRequestAssetMain = () => {
             })
     }
 
-    function handleRejectRequestAsset(value) {
+    const openAcceptRequestAssetModal = (value) => {
+        openModal({type: "acceptRequestAsset", requestAsset: value})
+    }
+
+    const openRejectRequestAssetModal = (value) => {
         openModal({type: "rejectRequestAsset", requestAsset: value})
     }
 
@@ -418,6 +420,11 @@ const ManageRequestAssetMain = () => {
                                 <Th>
                                     <ThContainer>
                                         <ThSpan>Asset type</ThSpan>
+                                    </ThContainer>
+                                </Th>
+                                <Th>
+                                    <ThContainer>
+                                        <ThSpan>Requested by</ThSpan>
                                     </ThContainer>
                                 </Th>
                                 <Th>
@@ -466,6 +473,9 @@ const ManageRequestAssetMain = () => {
                                                         {value.categoryName}
                                                     </Td>
                                                     <Td>
+                                                        {value.userName}
+                                                    </Td>
+                                                    <Td>
                                                         {value.quantity}
                                                     </Td>
                                                     <Td>
@@ -481,7 +491,7 @@ const ManageRequestAssetMain = () => {
                                                     <Td style={{border: 'none'}}>
                                                         <Button
                                                             disabled={value.state !== 'Waiting for approval' ? true : false}
-                                                            onClick={() => handleRejectRequestAsset(value)}
+                                                            onClick={()=>openAcceptRequestAssetModal(value)}
                                                         >
                                                             <CheckOutlined
                                                                 style={{
@@ -495,7 +505,7 @@ const ManageRequestAssetMain = () => {
                                                     <Td style={{border: 'none'}}>
                                                         <Button
                                                             disabled={value.state !== 'Waiting for approval' ? true : false}
-                                                            onClick={() => handleRejectRequestAsset(value)}
+                                                            onClick={()=>openRejectRequestAssetModal(value)}
                                                         >
                                                             <CloseOutlined
                                                                 style={{
@@ -526,7 +536,7 @@ const ManageRequestAssetMain = () => {
                    type={typeModal}    //Loại modal
                    setIsReloadPage={setIsReloadPage}   //Hàm rerender khi dữ liệu thay đổi
                    showToastFromOut={showToastFromOut} //Hàm hiện toast
-                   requestAsset={requestAssetModal}
+                   requestAsset={danhMucModal}
             />
 
             {/* === TOAST === */}

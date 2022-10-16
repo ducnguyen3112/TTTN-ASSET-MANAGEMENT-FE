@@ -1,14 +1,12 @@
 import styled from "styled-components";
-import { useCallback, useEffect, useRef } from "react";
+import { CloseOutlined } from "@mui/icons-material";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "../../css/main.css";
-import ReturningRequestResponseService from "../../service/ReturningRequestResponseService";
-import {CloseOutlined} from "@mui/icons-material";
-import "../../css/main.css";
-import assignmentService from "../../service/AssignmentService";
-import RequestReturningService from "../../service/RequestReturningService";
+import StringFormatter from "../../service/StringFormatter";
+import axios from "axios";
+import DateFormatterService from "../../service/DateFormatterService";
+import { AXIOS_API_URL } from "../../constants/Axios";
 import requestAssetService from "../../service/RequestAssetService";
-
-
 
 const Background = styled.div`
     width: 100%;
@@ -18,7 +16,6 @@ const Background = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 3;
 
     top: 0;
     right: 0;
@@ -29,7 +26,7 @@ const Background = styled.div`
 `
 
 const ModalWrapper = styled.div`
-    width: 33%;
+    width: 500px;
     height: auto;
     box-shadow: 0 5px 16px rgba(0, 0, 0, 0.2);
     background: var(--color-white);
@@ -52,6 +49,7 @@ const ModalContent = styled.div`
     width: 100%;
     flex-direction: row;
     justify-content: flex-start;
+    align-items: center;
     line-height: 1.8;
     color: #141414;
     margin: 20px 0px 20px 150px;
@@ -63,18 +61,18 @@ const ModalContent = styled.div`
     }
 `
 
-
-const ModalContentDelete = styled.div`
+const ModalDisableContent = styled.div`
     display: flex;
     width: 100%;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
     line-height: 1.8;
     color: #141414;
-    padding-left: 50px;
+    margin: 20px 0;
     p {
         font-size: 1.2rem;
-        margin-bottom: 10px;
+        margin: 20px 20px 0px 20px;
     }
 `
 
@@ -92,7 +90,7 @@ const CloseModalButton = styled.span`
 const H2 = styled.h2`
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     margin-bottom: 0.8rem;
     color: var(--color-primary);
     border-top-left-radius: 10px;
@@ -100,10 +98,9 @@ const H2 = styled.h2`
     border-bottom: 2px solid #333;
     width: 100%;
     height: 80px;
-    padding-left: 50px;
+    margin: 0;
     background-color: #eff1f5;
 `
-
 
 const DetailTitle = styled.div`
 `
@@ -123,6 +120,12 @@ margin-bottom: 10px;
 color: #8f9194;
 `
 
+const ButtonContainer = styled.div`
+    position: relative;
+    float: right;
+    margin: 0 22px 22px 0;
+`
+
 const ButtonClick = styled.button`
     min-width: 80px;
     padding: 10px;
@@ -139,24 +142,18 @@ const ButtonClick = styled.button`
     }
  
 `
-
 const Button = styled.div`
-    margin-top: 30px;
+    margin-top: 10px;
+    margin-right: 40px;
     width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-end;
     flex-direction: row;
 `
-const ButtonContainer = styled.div`
-    position: relative;
-    float: right;
-    margin: 0 22px 22px 0;
-`
 
-const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage, returningId ,showToastFromOut,requestAsset}) => {
-    //complete returning request
-    console.log(requestAsset)
-    // MODAL
+
+const Modal = ({ showModal, setShowModal, type, requestAsset, setIsReloadPage }) => {
+
     const modalRef = useRef();
     const closeModal = (e) => {
         if (modalRef.current === e.target) {
@@ -164,61 +161,124 @@ const Modal = ({ showModal, setShowModal, type, requestPayload, setIsReloadPage,
         }
     }
 
-    function handleRejectRequestAsset() {
-        requestAssetService.changeStateRequestAsset(requestAsset.id,'Rejected')
-            .then(res=>{
-                console.log(res.data)
-                setShowModal(false)
+    const keyPress = useCallback(
+        (e) => {
+            if (e.key === 'Escape' && showModal) {
+                setShowModal(false);
+            }
+        },
+        [setShowModal, showModal]
+    );
+
+    useEffect(
+        () => {
+            document.addEventListener('keydown', keyPress);
+            return () => document.removeEventListener('keydown', keyPress);
+        },
+        [keyPress]
+    );
+
+    const handleChangeStateRequestAsset = (state) => {
+        const data = {
+            'state': state
+        }
+        requestAssetService.changeStateRequestAsset(requestAsset.id, data)
+            .then(res => {
+                setShowModal(false);
+                setIsReloadPage(prev => !prev);
+
             })
-            .catch(err=>{
+            .catch(err => {
                 console.log(err)
             })
     }
 
-    if (type === "rejectRequestAsset") {
+    // =============== Xóa danh mục ===============
+    if (type === "acceptRequestAsset") {
         return (
             <>
                 {showModal ? (
-                    <Background ref={modalRef} onClick={closeModal}>
-                        <ModalWrapper showModal={showModal} style={{ width: "33%" }} >
+                    <Background ref={modalRef} onClick={closeModal} id="back_ground_disable_user">
+                        <ModalWrapper showModal={showModal} id="modal_wrapper">
                             <H2>Are you sure?</H2>
 
-                            <ModalContentDelete>
-                                <p >Do you want to reject this request for asset?</p>
-                                <Button style={{  margin: "20px 10px 0px 0px" }}>
-                                    <ButtonContainer>
+                            <ModalDisableContent id="modal_disable_content">
+                                <p>Do you want to accept this request for asset?</p>
+                                <Button id="button">
+                                    <ButtonContainer id="button_container_disable">
                                         <ButtonClick
-                                            id="btnYesCancelReturn"
+                                            id="btn_disable"
                                             className="active"
-                                            onClick={handleRejectRequestAsset()}
+                                            onClick={() => handleChangeStateRequestAsset('APPROVED')}
                                         >Yes</ButtonClick>
                                     </ButtonContainer>
-                                    <ButtonContainer>
-                                        <ButtonClick id="btnNoCancelReturn"
-                                                     onClick={() => setShowModal(prev => !prev)}
-                                        >No</ButtonClick>
+                                    <ButtonContainer id="button_container_cancel">
+                                        <ButtonClick
+                                            id="btn_cancel"
+                                            onClick={() => setShowModal(prev => !prev)}
+                                        >Cancel</ButtonClick>
                                     </ButtonContainer>
                                 </Button>
-                            </ModalContentDelete>
+                            </ModalDisableContent>
 
                             <CloseModalButton
-                                aria-label="Close modal" id="btnCloseConfirmCancelRequest"
+                                id="close_modal_button"
+                                aria-label="Close modal"
                                 onClick={() => setShowModal(prev => !prev)}
                             >
                                 <CloseOutlined />
                             </CloseModalButton>
                         </ModalWrapper>
                     </Background>
-                ) : ""}
+                ) : null}
             </>
         );
-    } else {
+    }
+    if (type === "rejectRequestAsset") {
+        return (
+            <>
+                {showModal ? (
+                    <Background ref={modalRef} onClick={closeModal} id="back_ground_disable_user">
+                        <ModalWrapper showModal={showModal} id="modal_wrapper">
+                            <H2>Are you sure?</H2>
+
+                            <ModalDisableContent id="modal_disable_content">
+                                <p>Do you want to reject this request for asset?</p>
+                                <Button id="button">
+                                    <ButtonContainer id="button_container_disable">
+                                        <ButtonClick
+                                            id="btn_disable"
+                                            className="active"
+                                            onClick={() => handleChangeStateRequestAsset('REJECTED')}
+                                        >Yes</ButtonClick>
+                                    </ButtonContainer>
+                                    <ButtonContainer id="button_container_cancel">
+                                        <ButtonClick
+                                            id="btn_cancel"
+                                            onClick={() => setShowModal(prev => !prev)}
+                                        >Cancel</ButtonClick>
+                                    </ButtonContainer>
+                                </Button>
+                            </ModalDisableContent>
+
+                            <CloseModalButton
+                                id="close_modal_button"
+                                aria-label="Close modal"
+                                onClick={() => setShowModal(prev => !prev)}
+                            >
+                                <CloseOutlined />
+                            </CloseModalButton>
+                        </ModalWrapper>
+                    </Background>
+                ) : null}
+            </>
+        );
+    }
+    else {
         return (
             <></>
         );
     }
-}
-
-
+};
 
 export default Modal;

@@ -315,7 +315,7 @@ const CreateRequestAssetMain = () => {
     return (
         <Container>
             <Title>
-                <H2>Edit request for asset</H2>
+                <H2>Create request for asset</H2>
             </Title>
             <Form>
                 <FormTitle>
@@ -362,6 +362,12 @@ const CreateRequestAssetMain = () => {
                                   maxLength={200}
                         ></TextArea>
                     </FormContentItem>
+                    <ButtonContainer>
+                        <ButtonClick
+                            id='createAsset_Cancel'
+                            onClick={() => navigate("/home")}
+                        >Cancel</ButtonClick>
+                    </ButtonContainer>
                     <ButtonContainer>
                         <button
                             type="button"
